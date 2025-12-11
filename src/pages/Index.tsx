@@ -269,7 +269,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-primary/30 mt-8 pt-8 text-center text-muted-foreground">
-            <p>© 2024 MIAMORE SHOP. Все права защищены.</p>
+            <p>© 2025 MIAMORE SHOP. Все права защищены.</p>
           </div>
         </div>
       </footer>
