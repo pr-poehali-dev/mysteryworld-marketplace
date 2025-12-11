@@ -64,10 +64,7 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <h1 className="text-4xl font-bold neon-glow font-orbitron">MIAMORE SHOP</h1>
               <div className="flex items-center gap-4">
-                <Badge variant="outline" className="text-lg px-4 py-2 border-primary text-primary">
-                  <Icon name="Sparkles" className="mr-2" size={18} />
-                  Киберпанк
-                </Badge>
+                <Badge variant="outline" className="text-lg px-4 py-2 border-primary text-primary">МИАМОРЕ</Badge>
               </div>
             </div>
           </div>
