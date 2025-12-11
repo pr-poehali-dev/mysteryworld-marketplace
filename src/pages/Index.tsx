@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import Cart from '@/components/Cart';
 
 interface Product {
   id: number;
@@ -26,9 +28,81 @@ const products: Product[] = [
   { id: 6, name: 'Маяк + база', price: 15000, category: 'special', description: 'Полностью готовый маяк с базой из изумрудов', limited: true, discount: 10, stock: 1 },
 ];
 
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  discount?: number;
+}
+
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 30 });
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('mysteryworld-cart');
+    if (saved) {
+      setCartItems(JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('mysteryworld-cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = (product: Product) => {
+    setCartItems(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        toast({
+          title: 'Товар уже в корзине',
+          description: `${product.name} - количество увеличено`,
+        });
+        return prev.map(item => 
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      toast({
+        title: 'Добавлено в корзину',
+        description: `${product.name} - ${product.price}₽`,
+      });
+      return [...prev, { 
+        id: product.id, 
+        name: product.name, 
+        price: product.price, 
+        quantity: 1,
+        discount: product.discount 
+      }];
+    });
+  };
+
+  const removeFromCart = (id: number) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
+    toast({
+      title: 'Удалено из корзины',
+      description: 'Товар удален',
+      variant: 'destructive',
+    });
+  };
+
+  const updateQuantity = (id: number, quantity: number) => {
+    setCartItems(prev => prev.map(item => 
+      item.id === id ? { ...item, quantity } : item
+    ));
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+    toast({
+      title: 'Корзина очищена',
+      description: 'Все товары удалены',
+    });
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -61,10 +135,12 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <h1 className="text-4xl font-bold neon-glow font-orbitron">MYSTERYWORLD SHOP</h1>
               <div className="flex items-center gap-4">
-                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-                  <Icon name="ShoppingCart" className="mr-2" size={18} />
-                  Корзина
-                </Button>
+                <Cart 
+                  items={cartItems}
+                  onRemoveItem={removeFromCart}
+                  onUpdateQuantity={updateQuantity}
+                  onClearCart={clearCart}
+                />
               </div>
             </div>
           </div>
@@ -140,7 +216,10 @@ const Index = () => {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                      onClick={() => addToCart(product)}
+                    >
                       <Icon name="ShoppingBag" className="mr-2" size={18} />
                       Купить сейчас
                     </Button>
@@ -212,7 +291,10 @@ const Index = () => {
                       <div className="text-3xl font-bold text-primary font-orbitron">{product.price}₽</div>
                     </CardContent>
                     <CardFooter>
-                      <Button className="w-full bg-primary/20 border border-primary hover:bg-primary hover:text-primary-foreground">
+                      <Button 
+                        className="w-full bg-primary/20 border border-primary hover:bg-primary hover:text-primary-foreground"
+                        onClick={() => addToCart(product)}
+                      >
                         <Icon name="ShoppingCart" className="mr-2" size={18} />
                         В корзину
                       </Button>
